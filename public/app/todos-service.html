@@ -1,0 +1,62 @@
+<link rel="import" href="../components/polymer/polymer.html">
+<polymer-element name="todos-service" attributes="list">
+    <template>
+        <style>
+            :host {
+                display: none;
+            }
+        </style>
+    </template>
+    <script>
+    Polymer('todos-service', {
+        created: function() {
+            console.log('created');
+            var self = this;
+            self.list = [];
+            var cursor = TodosCollection.find({}, {sort: {createdAt: -1}});
+            var observeHandle = ObserveSequence.observe(function() {
+                return cursor;
+            }, {
+                addedAt: function(id, item, i, beforeId) {
+                    item._id = id;
+                    self.list.splice(i, 0, item);
+                },
+                changedAt: function(id, newItem, oldItem, atIndex) {
+                    self.list[atIndex] = newItem;
+                },
+                removedAt: function(id, item, i) {
+                    self.list.splice(i, 1);
+                },
+                movedTo: function(id, item, i, j, beforeId) {
+                    var temp = self.list[i];
+                    self.list.splice(i, 1);
+                    self.list.splice(j, 0, temp);
+                }
+            });
+        },
+        ready: function () {
+            console.log('ready');
+            this.insertNewTodo = function(doc) {
+                if(!doc.updatedAt)
+                    doc.updatedAt = new Date();
+                if(!doc.createdAt)
+                    doc.createdAt = new Date();
+                return TodosCollection.insert(doc);
+            };
+            this.saveTodo = function (_id) {
+                var value = TodosCollection.findOne(_id).done;
+                return TodosCollection.update({_id: _id}, {$set: {done: !value, updatedAt: new Date()}});
+            };
+            this.removeTodo = function (_id) {
+                if(_.isArray(_id)) {
+                    _.each(_id, function (value) {
+                        console.log(value);
+                        TodosCollection.remove({_id: value});
+                    });
+                }
+                return TodosCollection.remove({_id: _id});
+            };
+        }
+    });
+    </script>
+</polymer-element>

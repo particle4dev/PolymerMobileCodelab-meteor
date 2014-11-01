@@ -4,3 +4,10 @@
 # but you can also edit it by hand.
 
 standard-app-packages
+observe-sequence
+insecure
+
+particle4dev:iron-subscription
+particle4dev:debugx
+mrt:moment
+

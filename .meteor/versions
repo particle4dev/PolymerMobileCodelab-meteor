@@ -19,6 +19,7 @@ html-tools@1.0.2
 htmljs@1.0.2
 http@1.0.8
 id-map@1.0.1
+insecure@1.0.1
 jquery@1.0.1
 json@1.0.1
 launch-screen@1.0.0
@@ -30,8 +31,11 @@ minifiers@1.1.2
 minimongo@1.0.5
 mobile-status-bar@1.0.1
 mongo@1.0.8
+mrt:moment@2.8.1
 observe-sequence@1.0.3
 ordered-dict@1.0.1
+particle4dev:debugx@1.0.1
+particle4dev:iron-subscription@1.1.0
 random@1.0.1
 reactive-dict@1.0.4
 reactive-var@1.0.3

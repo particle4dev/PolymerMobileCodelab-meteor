@@ -57,3 +57,7 @@ Meteor.publish("delay", function(){
     Fiber.yield();
     this.ready();
 });
+
+Meteor.publish("todos", function(){
+    return TodosCollection.find();
+});

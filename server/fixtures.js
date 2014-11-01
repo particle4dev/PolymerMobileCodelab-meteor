@@ -8,19 +8,19 @@ var Files = APP.namespace('Files');
 /**
  * Methods, functions
  */
+var Files = APP.namespace('Files');
 
-var loadUsers = function(){
-    var users = Files.loadStaticJSONFile('users.json');
-    _.each(users.data, function(user){
-        loginfo('FIXTURES - User', user.username);
-        if (!Users.findOne({username: user.username}, {fields: {_id:1}})){
-            user.updated = new Date();
-            user.profile.image = SC.AVATAR;
+var loadTodos = function(){
+    var todos = Files.loadStaticJSONFile('todos.json');
+    _.each(todos.data, function(todo){
+        loginfo('FIXTURES - Todos', todo.body);
+        if (!TodosCollection.findOne({body: todo.body}, {fields: {_id:1}})){
+            todo.updated = new Date();
             try {
-                Users.insert(user);
+                TodosCollection.insert(todo);
             }
             catch (err){
-                logerror('FIXTURES -- User Insert Failed', err.message);
+                logerror('FIXTURES -- Todo Insert Failed', err.message);
             }
         }
     });
@@ -30,6 +30,6 @@ var loadUsers = function(){
 (function(){
     var self = this;
     self.init = function(){
-        loadUsers();
+        loadTodos();
     };
 }).apply(APP.namespace('FIXTURES'));
