@@ -1,0 +1,126 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<polymer-element name="meteor-collection" hidden attributes="name selector options result">
+    <template>
+        
+    </template>
+    <script>
+    Polymer('meteor-collection', {
+        /**
+         * Name of the collection.
+         *
+         * @attribute name
+         * @type string
+         * @default null
+         */
+        name: null,
+
+        /**
+         * A query describing the documents to find
+         *
+         * @attribute selector
+         * @type object
+         * @default {}
+         */
+        selector: {},
+
+        /**
+         * ???
+         *
+         * @attribute options
+         * @type object
+         * @default undefined
+         */
+        options: undefined,
+
+        /**
+         * Array that contain the result query
+         *
+         * @attribute result
+         * @type Array
+         * @default []
+         */
+        result: [],
+
+        /**
+         * Collection ????
+         *
+         * @attribute _collection
+         * @type Object
+         * @default null
+         */
+        _collection: null,
+
+        created: function() { 
+            // var values = [];
+            // for (var i = 0; i < this.attributes.length; ++i) {
+            //     var attr = this.attributes[i];
+            //     values[attr.nodeName] = attr.nodeValue;
+            //     console.log(attr, attr.nodeValue);
+            // }
+
+            if(!ObserveSequence || !ObserveSequence.observe)
+                throw new Error('ObserveSequence is not added as a reference to project');
+        },
+        ready: function() { 
+            // console.log(this.name);
+            // console.log(this.selector);
+            console.log('ready >>>');
+            var self = this;
+
+            var selector = null;
+            if(typeof(self.selector) == 'string')
+                selector = JSON.parse(self.selector);
+            else
+                selector = self.selector;
+
+            var options = null;
+            if(typeof(self.options) == 'string')
+                options = JSON.parse(self.options);
+            else
+                options = self.options;
+
+            this._collection = window[this.name];
+            if(!this._collection)
+                throw new Error('collection is not defined');
+
+            var cursor = this._collection.find(selector, options);
+            self._observeHandle = ObserveSequence.observe(function() {
+                return cursor;
+            }, {
+                addedAt: function(id, item, i, beforeId) {
+                    item._id = id;
+                    self.result.splice(i, 0, item);
+                },
+                changedAt: function(id, newItem, oldItem, atIndex) {
+                    self.result[atIndex] = newItem;
+                },
+                removedAt: function(id, item, i) {
+                    self.result.splice(i, 1);
+                },
+                movedTo: function(id, item, i, j, beforeId) {
+                    var temp = self.result[i];
+                    self.result.splice(i, 1);
+                    self.result.splice(j, 0, temp);
+                }
+            });
+        },
+        detached: function () {
+            // dom removed
+            if(this._observeHandle) {
+                this._observeHandle.stop();
+                this._observeHandle = null;
+            }
+        },
+        attributeChanged: function(attrName, oldVal, newVal) {
+            var newVal = this.attributes[attrName];
+            console.log(attrName, 'old: ' + oldVal, 'new:', newVal);
+        },
+        nameChanged: function() {
+            console.log(this.name, this._collection);
+        },
+        selectorChanged: function() {
+            console.log(this.selector);
+        }
+    });
+    </script>
+</polymer-element>

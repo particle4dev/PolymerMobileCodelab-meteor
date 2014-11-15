@@ -8,6 +8,6 @@ observe-sequence
 insecure
 
 particle4dev:iron-subscription
-particle4dev:debugx
 mrt:moment
+particle4dev:debugx
 

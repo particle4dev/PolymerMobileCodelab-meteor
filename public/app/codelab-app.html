@@ -1,28 +1,41 @@
 <head>
-    <link rel="import" href="../components/polymer/polymer.html">
-    <link rel="import" href="../components/font-roboto/roboto.html">
-    <link rel="import" href="../components/core-drawer-panel/core-drawer-panel.html">
-    <link rel="import" href="../components/core-header-panel/core-header-panel.html">
-    <link rel="import" href="../components/core-toolbar/core-toolbar.html">
-    <link rel="import" href="../components/core-icons/core-icons.html">
-    <link rel="import" href="../components/paper-icon-button/paper-icon-button.html">
-    <link rel="import" href="../components/paper-fab/paper-fab.html">
-    <link rel="import" href="../components/paper-input/paper-input.html">
-    <link rel="import" href="../components/paper-checkbox/paper-checkbox.html">
-    <link rel="import" href="../components/core-item/core-item.html">
-    <link rel="import" href="../components/paper-toggle-button/paper-toggle-button.html">
-    <link rel="import" href="../components/paper-icon-button/paper-icon-button.html">
-    <link rel="import" href="../components/paper-slider/paper-slider.html">
-    <link rel="import" href="../components/paper-toast/paper-toast.html">
-    <link rel="import" href="../components/paper-button/paper-button.html">
-    <link rel="import" href="../components/paper-shadow/paper-shadow.html">
-    <link rel="import" href="../components/paper-ripple/paper-ripple.html">
+    <link rel="import" href="../bower_components/polymer/polymer.html">
+    <link rel="import" href="../bower_components/font-roboto/roboto.html">
+    <link rel="import" href="../bower_components/core-drawer-panel/core-drawer-panel.html">
+    <link rel="import" href="../bower_components/core-header-panel/core-header-panel.html">
+    <link rel="import" href="../bower_components/core-toolbar/core-toolbar.html">
+    <link rel="import" href="../bower_components/core-icons/core-icons.html">
+    <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+    <link rel="import" href="../bower_components/paper-input/paper-input.html">
+    <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+    <link rel="import" href="../bower_components/core-item/core-item.html">
+    <link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+    <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="../bower_components/paper-slider/paper-slider.html">
+    <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+    <link rel="import" href="../bower_components/paper-button/paper-button.html">
+    <link rel="import" href="../bower_components/paper-shadow/paper-shadow.html">
+    <link rel="import" href="../bower_components/paper-ripple/paper-ripple.html">
+
+    <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+    <link rel="import" href="../bower_components/paper-dialog/paper-action-dialog.html">
+
     <link rel="import" href="./todos-service.html">
+
+    <link rel="import" href="../polymer-meteor-component/meteor-collection.html">
 </head>
 <polymer-element name="codelab-app">
     <template>
         <link rel="stylesheet" href="styles.css">
-        <todos-service id="service" list="{{list}}"></todos-service>
+        <todos-service id="service"></todos-service>
+
+
+        <meteor-collection id="todosData" name="TodosCollection" selector='{}'
+            options='{"sort": {"createdAt": -1}}'>
+        </meteor-collection>
+
+
 
         <core-drawer-panel id="drawerPanel" narrow="{{narrow}}" navigation flex mode="seamed">
             <core-header-panel drawer mode="waterfall">
@@ -55,14 +68,23 @@
                     <paper-fab icon="icons:add" on-click="{{showNewNoteInput}}"></paper-fab>
                 </core-toolbar>
                 <div class="content" data-fade-selected="{{fadeSelected}}">
-                    
+
+                    <paper-action-dialog heading="Title" id="editz" transition="core-transition-center">
+                        <paper-input id="editNoteInput" floatingLabel label="Edit a note" on-change="" value="{{selectNote.body}}"></paper-input>
+                        <paper-button affirmative on-click="{{updateNoteEvent}}">Update</paper-button>
+                        <paper-button affirmative autofocus>Cancel</paper-button>
+                    </paper-action-dialog>
+
                     <paper-input id="newNoteInput" floatingLabel label="Add a new note" on-change="{{add}}" value="{{newNote}}"></paper-input>
 
-                    <template repeat="{{todo in list}}">
+                    <template repeat="{{todo in $.todosData.result}}">
                         <div center horizontal layout class="item" data-done="{{todo.done}}">
                             <paper-checkbox checked="{{todo.done}}" on-change="{{dataChanged}}"></paper-checkbox>
-                            <div flex class="card">
+                            <div flex class="card" on-click="{{updateNote}}">
                                 <p>{{todo.body}}</p>
+                                <summary style="margin-top: 20px; opacity: .6; text-align: right;">
+                                    {{timeFormat (todo.createdAt)}}
+                                </summary>
                                 <paper-shadow z="2"></paper-shadow>
                                 <paper-ripple class="recenteringTouch" fit></paper-ripple>
                             </div>
@@ -99,7 +121,7 @@
         },
         delete: function(e) {
             var done = [];
-            _.each(this.$.service.list, function(num){
+            _.each(this.$.todosData.result, function(num){
                 if(num.done == true) {
                     done.push(num._id);
                 }
@@ -117,6 +139,24 @@
             this.fontSize = 14;
             this.fadeSelected = false;
             this.$.toast.show();
+        },
+
+        timeFormat: function (time) {
+            return moment(time).calendar();
+        },
+
+        selectNote: null,
+        updateNote: function (event, detail, sender) {
+            if(sender && sender.templateInstance && sender.templateInstance.model) {
+                var todo = sender.templateInstance.model.todo;
+                this.selectNote = TodosCollection.findOne(todo._id);
+                this.$.editz.toggle();
+            }
+        },
+
+        updateNoteEvent: function () {
+            var id = this.selectNote._id;
+            this.$.service.updateTitle(id, this.$.editNoteInput.value);
         }
     });
     </script>

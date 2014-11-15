@@ -1,0 +1,21 @@
+{
+  "name": "todos",
+  "version": "0.1.0",
+  "author": "particle4dev",
+  "private": true,
+  "homepage": "https://github.com/particle4dev/PolymerMobileCodelab-meteor",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#master",
+    "core-elements": "Polymer/core-elements#master",
+    "paper-elements": "Polymer/paper-elements#master",
+    "font-roboto": "Polymer/font-roboto#master",
+    "app-router": "~2.0.2"
+  }
+}
