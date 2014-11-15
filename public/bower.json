@@ -15,7 +15,6 @@
     "polymer": "Polymer/polymer#master",
     "core-elements": "Polymer/core-elements#master",
     "paper-elements": "Polymer/paper-elements#master",
-    "font-roboto": "Polymer/font-roboto#master",
-    "app-router": "~2.0.2"
+    "font-roboto": "Polymer/font-roboto#master"
   }
 }
