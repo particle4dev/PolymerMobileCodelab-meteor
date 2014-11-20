@@ -3,6 +3,7 @@
         {
             "_id": "test00",
             "body": "Meet a pretty girl",
+            "image": "/images/pretty_girl.jpg",
             "done": false
         }
     ]

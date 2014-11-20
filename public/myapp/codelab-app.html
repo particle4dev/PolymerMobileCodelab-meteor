@@ -163,7 +163,7 @@
                                 <p>{{todo.body}}</p>
 
                                 <template if="{{todo.image}}">
-                                    <core-image style="width: 100%" src="data:image/jpeg;base64,{{todo.image}}">
+                                    <core-image style="width: 100%" src="{{todo.image}}">
                                     </core-image>
                                 </template>
 
@@ -251,6 +251,8 @@
 
         // camera
         takeAPicture: function(){
+            if(!navigator || !navigator.camera)
+                return ; // stop if it not run in cordova
             var cameraPopoverHandle = navigator.camera.getPicture(
                 this.onPhotoDataSuccess.bind(this),
                 this.onFail.bind(this),
@@ -273,7 +275,7 @@
         },
         imageURI: null,
         onPhotoDataSuccess: function (imageData) {
-            this.imageURI = imageData;
+            this.imageURI = "data:image/jpeg;base64," + imageData;
         },
         deleteImage: function () {
             this.imageURI = null;
