@@ -64,7 +64,6 @@
         ready: function() { 
             // console.log(this.name);
             // console.log(this.selector);
-            console.log('ready >>>');
             var self = this;
 
             var selector = null;
@@ -112,14 +111,14 @@
             }
         },
         attributeChanged: function(attrName, oldVal, newVal) {
-            var newVal = this.attributes[attrName];
-            console.log(attrName, 'old: ' + oldVal, 'new:', newVal);
+            // var newVal = this.attributes[attrName];
+            // console.log(attrName, 'old: ' + oldVal, 'new:', newVal);
         },
         nameChanged: function() {
-            console.log(this.name, this._collection);
+            // console.log(this.name, this._collection);
         },
         selectorChanged: function() {
-            console.log(this.selector);
+            // console.log(this.selector);
         }
     });
     </script>

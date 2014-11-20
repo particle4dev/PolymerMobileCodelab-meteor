@@ -4,6 +4,7 @@
     <link rel="import" href="../bower_components/core-drawer-panel/core-drawer-panel.html">
     <link rel="import" href="../bower_components/core-header-panel/core-header-panel.html">
     <link rel="import" href="../bower_components/core-toolbar/core-toolbar.html">
+    <link rel="import" href="../bower_components/core-image/core-image.html">
     <link rel="import" href="../bower_components/core-icons/core-icons.html">
     <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
     <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
@@ -27,6 +28,70 @@
 </head>
 <polymer-element name="codelab-app">
     <template>
+        <style>
+            :host {
+                font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial;
+            }
+
+            [drawer] {
+                background-color: #fff;
+            }
+
+            [main] > div {
+                padding: 2em;
+            }
+
+            [drawer] > core-item {
+                padding: 1em;
+            }
+
+            [main] paper-checkbox {
+                margin-right: 1em;
+            }
+
+            [main] {
+                height: 100%;
+                background-color: #f1f1f3;
+            }
+
+            [drawer] core-toolbar {
+                background-color: #4F7DC9;
+                color: #fff;
+            }
+
+            [main] core-toolbar {
+                background-color: #526E9C;
+                color: #fff;
+            }
+
+            paper-fab {
+                background-color: #e0a30b;
+                position: absolute !important;
+                bottom: -27px;
+                right: 1em;
+                z-index: 10;
+            }
+
+            .card {
+                width: 300px;
+                background-color: #fff;
+                padding: 1em;
+                margin: 1em;
+                position: relative;
+            }
+
+            * [data-fade-selected="true"] .item[data-done="true"] {
+                opacity: 0.3;
+            }
+
+            paper-button[raised].colored {
+                width: 100%;
+                background: #4285f4;
+                color: #fff;
+                fill: #fff;
+            }
+        </style>
+
         <link rel="stylesheet" href="styles.css">
         <todos-service id="service"></todos-service>
 
@@ -69,19 +134,39 @@
                 </core-toolbar>
                 <div class="content" data-fade-selected="{{fadeSelected}}">
 
-                    <paper-action-dialog heading="Title" id="editz" transition="core-transition-center">
+                    <paper-action-dialog heading="Title" id="editTodo" transition="core-transition-center">
                         <paper-input id="editNoteInput" floatingLabel label="Edit a note" on-change="" value="{{selectNote.body}}"></paper-input>
                         <paper-button affirmative on-click="{{updateNoteEvent}}">Update</paper-button>
                         <paper-button affirmative autofocus>Cancel</paper-button>
                     </paper-action-dialog>
 
-                    <paper-input id="newNoteInput" floatingLabel label="Add a new note" on-change="{{add}}" value="{{newNote}}"></paper-input>
+                    <paper-action-dialog heading="Error" id="cameraError" transition="core-transition-center">
+                        <div>{{cameraErrorMessage}}</div>
+                        <paper-button affirmative autofocus>Cancel</paper-button>
+                    </paper-action-dialog>
+
+                    <div center horizontal layout>
+
+                        <paper-input id="newNoteInput" floatingLabel label="Add a new note" on-change="{{add}}" value="{{newNote}}"></paper-input>
+                        <paper-button class="colored">
+                            <core-icon icon="picture-in-picture" on-click="{{takeAPicture}}"></core-icon>
+                        </paper-button>
+                        <template if="{{imageURI}}">
+                            <core-icon icon="add" on-click="{{ deleteImage }}"></core-icon>
+                        </template>
+                    </div>
 
                     <template repeat="{{todo in $.todosData.result}}">
                         <div center horizontal layout class="item" data-done="{{todo.done}}">
                             <paper-checkbox checked="{{todo.done}}" on-change="{{dataChanged}}"></paper-checkbox>
                             <div flex class="card" on-click="{{updateNote}}">
                                 <p>{{todo.body}}</p>
+
+                                <template if="{{todo.image}}">
+                                    <core-image style="width: 100%" src="data:image/jpeg;base64,{{todo.image}}">
+                                    </core-image>
+                                </template>
+
                                 <summary style="margin-top: 20px; opacity: .6; text-align: right;">
                                     {{timeFormat (todo.createdAt)}}
                                 </summary>
@@ -105,12 +190,17 @@
         },
         add: function() {
             if (this.newNote) {
-                this.$.service.insertNewTodo({
-                    body: this.newNote,
-                    done: false
-                });
-                this.$.newNoteInput.style.display = 'none';
+                var data = {done: false};
+                if(this.newNote)
+                    data.body = this.newNote;
+                if(this.imageURI)
+                    data.image = this.imageURI;
+                this.$.service.insertNewTodo(data);
+                
+                // this.$.newNoteInput.style.display = 'none';
                 this.$.newNoteInput.value = null;
+
+                this.imageURI = null;
             }
         },
         dataChanged: function(event, detail, sender) {
@@ -150,13 +240,43 @@
             if(sender && sender.templateInstance && sender.templateInstance.model) {
                 var todo = sender.templateInstance.model.todo;
                 this.selectNote = TodosCollection.findOne(todo._id);
-                this.$.editz.toggle();
+                this.$.editTodo.toggle();
             }
         },
 
         updateNoteEvent: function () {
             var id = this.selectNote._id;
             this.$.service.updateTitle(id, this.$.editNoteInput.value);
+        },
+
+        // camera
+        takeAPicture: function(){
+            var cameraPopoverHandle = navigator.camera.getPicture(
+                this.onPhotoDataSuccess.bind(this),
+                this.onFail.bind(this),
+                {
+                    destinationType: Camera.DestinationType.DATA_URL, // base64
+                    saveToPhotoAlbum: false,
+                    quality: 50,
+                    targetWidth: 640,
+                    targetHeight: 480,
+                    encodingType: Camera.EncodingType.JPEG,
+                    // allowEdit: true,
+                    sourceType: Camera.PictureSourceType.CAMERA
+                }
+            );
+        },
+        cameraErrorMessage: '',
+        onFail: function (message) {
+            this.cameraErrorMessage = message;
+            this.$.cameraError.toggle();
+        },
+        imageURI: null,
+        onPhotoDataSuccess: function (imageData) {
+            this.imageURI = imageData;
+        },
+        deleteImage: function () {
+            this.imageURI = null;
         }
     });
     </script>
